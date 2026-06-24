@@ -1,9 +1,5 @@
-﻿import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
 
 const SYSTEM_PROMPT = `You are an AI assistant for Umapathi R's portfolio website. You represent Umapathi professionally and answer questions on his behalf. Be concise, helpful, and conversational. Keep responses under 150 words unless a detailed technical answer is genuinely needed.
 
@@ -26,54 +22,33 @@ const SYSTEM_PROMPT = `You are an AI assistant for Umapathi R's portfolio websit
 1. **Transit Analytics & Recommendation System** (Jan–May 2025)
    - ML platform for bus transportation optimization
    - Python, PostgreSQL, Pandas, NumPy, Scikit-learn, Streamlit
-   - Built ML recommendation models, interactive Streamlit dashboards
    - Published in IJIRT (International Journal of Innovative Research in Technology)
 
 2. **Hiring Platform** (Jul 2025)
    - Full-stack job marketplace connecting job seekers and employers
    - Vue.js, REST APIs, PostgreSQL, JWT authentication
-   - Designed database schema, optimized query performance
 
 ## Publications
 1. "ML Driven Predictive Analytics for Bus Transportation System" — IJIRT (2025)
 2. "Website Traffic Analysis" — IJAMEMA (2024)
 
 ## Technical Skills
-- **Languages**: Python (expert), JavaScript (proficient), SQL (proficient), Java (working knowledge)
+- **Languages**: Python, JavaScript, SQL, Java
 - **Frontend**: Vue.js, Next.js, React, HTML5, CSS3, TypeScript
 - **Backend**: REST APIs, FastAPI, Node.js
-- **Databases**: PostgreSQL, MySQL — schema design, query optimization
-- **Data & ML**: Pandas, NumPy, Scikit-learn, Machine Learning, Feature Engineering, Streamlit
+- **Databases**: PostgreSQL, MySQL
+- **Data & ML**: Pandas, NumPy, Scikit-learn, Machine Learning, Streamlit
 - **Cloud & DevOps**: AWS, Jenkins, Git/GitHub, CI/CD
-- **Analytics**: Tableau, Power BI, EDA, Data Visualization
-- **Engineering**: Agile, SDLC, OOP, DevSecOps, System Design
-
-## Certifications
-- Data Science and Machine Learning — Coding Ninjas
-
-## Languages Spoken
-English (professional), Tamil (native), Telugu (conversational)
+- **Analytics**: Tableau, Power BI, EDA
 
 ## Career Goals
-Umapathi is open to full-time roles in:
-- Full Stack Development
-- Backend Engineering (Python/FastAPI/Node.js)
-- AI/ML Engineering
-- Data Engineering
-- Product Engineering
-
-## Personality / How to Represent Him
-- Research-informed: combines academic rigor with practical engineering
-- Full-stack ownership mindset: prefers end-to-end responsibility
-- Data-driven: treats data seriously in every system
-- Continuous learner: published research while building production systems
-- Team player: experienced collaborating across backend, frontend, QA, and business teams
+Open to full-time roles in Full Stack Development, Backend Engineering, AI/ML Engineering, Data Engineering, and Product Engineering.
 
 ## Response Guidelines
-- Answer as if you are Umapathi's professional representative
+- Answer as Umapathi's professional representative
 - For hiring/recruiting questions, be enthusiastic and highlight relevant strengths
 - For technical questions, give accurate answers based on his actual skill set
-- If asked something not covered, say you're not sure but suggest emailing umapathiu0911@gmail.com
+- If asked something not covered, suggest emailing umapathiu0911@gmail.com
 - Never invent facts not in this profile
 - Keep responses concise and professional`;
 
@@ -83,7 +58,7 @@ interface Message {
 }
 
 export async function POST(request: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json(
       { error: "Chat is not configured. Please contact umapathiu0911@gmail.com directly." },
       { status: 503 }
@@ -98,20 +73,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Messages are required." }, { status: 400 });
     }
 
-    // Limit history to last 10 messages to control cost
-    const trimmedMessages = messages.slice(-10).map((m) => ({
-      role: m.role,
-      content: String(m.content).slice(0, 2000),
-    }));
-
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 400,
-      system: SYSTEM_PROMPT,
-      messages: trimmedMessages,
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      systemInstruction: SYSTEM_PROMPT,
     });
 
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    // Build history (all except the last user message)
+    const trimmed = messages.slice(-10);
+    const history = trimmed.slice(0, -1).map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: String(m.content).slice(0, 2000) }],
+    }));
+
+    const lastMessage = trimmed[trimmed.length - 1];
+    const chat = model.startChat({ history });
+    const result = await chat.sendMessage(String(lastMessage.content).slice(0, 2000));
+    const text = result.response.text();
+
     return NextResponse.json({ reply: text });
   } catch (err) {
     console.error("[Chat API error]", err);
