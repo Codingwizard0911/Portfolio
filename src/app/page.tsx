@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, animate, useMotionValue, useInView } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight, ExternalLink, Mail,
   Brain, Server, Database, Code2, BookOpen, Zap,
@@ -9,12 +10,94 @@ import {
 import { GithubIcon, LinkedinIcon } from "@/components/shared/SocialIcons";
 import AnimatedSection from "@/components/shared/AnimatedSection";
 import TechBadge from "@/components/shared/TechBadge";
+import ProfileImage from "@/components/shared/ProfileImage";
+import TiltCard from "@/components/shared/TiltCard";
+import AuroraBackground from "@/components/shared/AuroraBackground";
+import MagneticButton from "@/components/shared/MagneticButton";
+import GitHubStats from "@/components/shared/GitHubStats";
+
+// ── Typewriter word cycling ────────────────────────────────────────────
+const HERO_WORDS = ["data", "AI", "ML", "analytics"];
+
+function TypewriterWord() {
+  const [wordIdx, setWordIdx] = useState(0);
+  const [displayed, setDisplayed] = useState(HERO_WORDS[0]);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    const word = HERO_WORDS[wordIdx];
+    let t: ReturnType<typeof setTimeout>;
+    if (!deleting && displayed === word) {
+      t = setTimeout(() => setDeleting(true), 1800);
+    } else if (deleting && displayed === "") {
+      setDeleting(false);
+      setWordIdx((i) => (i + 1) % HERO_WORDS.length);
+    } else if (deleting) {
+      t = setTimeout(() => setDisplayed((s) => s.slice(0, -1)), 55);
+    } else {
+      t = setTimeout(() => setDisplayed(word.slice(0, displayed.length + 1)), 90);
+    }
+    return () => clearTimeout(t);
+  }, [displayed, deleting, wordIdx]);
+
+  return (
+    <span className="text-gradient-brand inline-block min-w-[4ch]">
+      {displayed}
+      <span className="inline-block w-[3px] h-[0.8em] bg-brand-400 ml-0.5 align-middle animate-pulse rounded-sm" />
+    </span>
+  );
+}
+
+// ── Live clock in IST ─────────────────────────────────────────────────
+function LiveClock() {
+  const [display, setDisplay] = useState("");
+  useEffect(() => {
+    function tick() {
+      const now = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true });
+      const h = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })).getHours();
+      const greeting = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+      setDisplay(`${greeting} · ${now} IST`);
+    }
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => clearInterval(id);
+  }, []);
+  if (!display) return null;
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-neutral-600">
+      <span className="w-1 h-1 rounded-full bg-emerald-500 inline-block" />
+      {display}
+    </span>
+  );
+}
+
+// ── Count-up number that animates when it enters the viewport ─────────
+function CountUp({
+  to, decimals = 0, suffix = "",
+}: { to: number; decimals?: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const mv = useMotionValue(0);
+  const [display, setDisplay] = useState("0");
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+
+  useEffect(() => {
+    if (!inView) return;
+    const ctrl = animate(mv, to, {
+      duration: 1.6,
+      ease: "easeOut",
+      onUpdate: (v) => setDisplay(v.toFixed(decimals)),
+    });
+    return ctrl.stop;
+  }, [inView, mv, to, decimals]);
+
+  return <span ref={ref}>{display}{suffix}</span>;
+}
 
 const stats = [
-  { value: "2+", label: "Publications", sublabel: "International Journals" },
-  { value: "8.8", label: "CGPA", sublabel: "B.Tech Information Technology" },
-  { value: "2+", label: "Projects", sublabel: "Production Systems" },
-  { value: "1+", label: "Year", sublabel: "Industry Experience" },
+  { num: 2,   decimals: 0, suffix: "+", label: "Publications",  sublabel: "International Journals" },
+  { num: 8.8, decimals: 1, suffix: "",  label: "CGPA",          sublabel: "B.Tech Information Technology" },
+  { num: 2,   decimals: 0, suffix: "+", label: "Projects",      sublabel: "Production Systems" },
+  { num: 1,   decimals: 0, suffix: "+", label: "Year",          sublabel: "Industry Experience" },
 ];
 
 const highlights = [
@@ -80,22 +163,43 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="relative min-h-screen flex items-center pt-20">
-        {/* Ambient glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-200 h-100 bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
+        {/* Aurora animated background */}
+        <AuroraBackground />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          {/* Desktop profile image — top-right */}
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute top-24 right-8 hidden lg:block"
+          >
+            <ProfileImage size="lg" />
+          </motion.div>
+
           <div className="max-w-4xl">
-            {/* Status badge */}
+            {/* Profile image on mobile — visible above headline */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              className="mb-8 flex sm:hidden"
+            >
+              <ProfileImage size="sm" />
+            </motion.div>
+
+            {/* Status badge + live clock */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8"
+              className="flex flex-wrap items-center gap-3 mb-8"
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-medium text-emerald-400">
-                Available for opportunities
-              </span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-medium text-emerald-400">Available for opportunities</span>
+              </div>
+              <LiveClock />
             </motion.div>
 
             {/* Headline */}
@@ -107,9 +211,8 @@ export default function HomePage() {
             >
               <span className="text-neutral-50">Engineering at the</span>
               <br />
-              <span className="text-gradient-brand">
-                intersection of data
-              </span>
+              <span className="text-neutral-50">intersection of </span>
+              <TypewriterWord />
               <br />
               <span className="text-neutral-50">and software.</span>
             </motion.h1>
@@ -134,38 +237,44 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.5 }}
               className="flex flex-wrap items-center gap-4 mb-12"
             >
-              <Link
-                href="/projects"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-medium text-sm transition-all hover:shadow-[0_0_24px_rgba(59,130,246,0.3)]"
-              >
-                View Projects
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/publications"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/5 hover:bg-white/8 border border-white/8 hover:border-white/14 text-neutral-200 font-medium text-sm transition-all"
-              >
-                <BookOpen className="w-4 h-4" />
-                Research
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3 text-neutral-400 hover:text-neutral-200 font-medium text-sm transition-colors"
-              >
-                Get in touch
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              <MagneticButton>
+                <Link
+                  href="/projects"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-medium text-sm transition-all hover:shadow-[0_0_24px_rgba(59,130,246,0.35)]"
+                >
+                  View Projects
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </MagneticButton>
+              <MagneticButton>
+                <Link
+                  href="/publications"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/5 hover:bg-white/8 border border-white/8 hover:border-white/14 text-neutral-200 font-medium text-sm transition-all"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Research
+                </Link>
+              </MagneticButton>
+              <MagneticButton>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 px-6 py-3 text-neutral-400 hover:text-neutral-200 font-medium text-sm transition-colors"
+                >
+                  Get in touch
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </MagneticButton>
             </motion.div>
 
-            {/* Socials */}
+            {/* Socials + email */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.65 }}
-              className="flex items-center gap-4"
+              className="flex items-center gap-4 flex-wrap"
             >
               <a
-                href="https://github.com/umapathiu0911"
+                href="https://github.com/Codingwizard0911"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub profile"
@@ -174,7 +283,7 @@ export default function HomePage() {
                 <GithubIcon className="w-5 h-5" />
               </a>
               <a
-                href="https://linkedin.com/in/umapathi-r"
+                href="https://linkedin.com/in/umapathi-ramesh-279289226"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn profile"
@@ -190,27 +299,35 @@ export default function HomePage() {
                 <Mail className="w-5 h-5" />
               </a>
               <div className="w-px h-4 bg-white/10" />
-              <span className="text-xs text-neutral-600">
-                umapathiu0911@gmail.com
-              </span>
+              <span className="text-xs text-neutral-600">umapathiu0911@gmail.com</span>
+            </motion.div>
+
+            {/* Core Stack — natural flow below socials, no overlap */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.85 }}
+              className="flex items-center gap-3 flex-wrap"
+            >
+              <span className="text-xs text-neutral-600 shrink-0 font-medium tracking-wide">Core stack</span>
+              <div className="h-px w-6 bg-white/8" />
+              <div className="flex flex-wrap gap-2">
+                {coreStack.map((tech) => (
+                  <TechBadge key={tech} name={tech} size="sm" />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Live GitHub stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1 }}
+              className="max-w-xs"
+            >
+              <GitHubStats />
             </motion.div>
           </div>
-
-          {/* Core Stack */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            className="absolute bottom-12 left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 hidden md:flex items-center gap-4"
-          >
-            <span className="text-xs text-neutral-600 shrink-0">Core stack</span>
-            <div className="flex-1 h-px bg-white/5" />
-            <div className="flex flex-wrap gap-2">
-              {coreStack.map((tech) => (
-                <TechBadge key={tech} name={tech} size="sm" />
-              ))}
-            </div>
-          </motion.div>
         </div>
       </section>
 
@@ -228,7 +345,9 @@ export default function HomePage() {
                   transition={{ delay: i * 0.1, duration: 0.5 }}
                   className="text-center"
                 >
-                  <div className="text-4xl font-bold text-gradient-brand mb-1">{stat.value}</div>
+                  <div className="text-4xl font-bold text-gradient-brand mb-1 tabular-nums">
+                    <CountUp to={stat.num} decimals={stat.decimals} suffix={stat.suffix} />
+                  </div>
                   <div className="text-sm font-medium text-neutral-200">{stat.label}</div>
                   <div className="text-xs text-neutral-500 mt-0.5">{stat.sublabel}</div>
                 </motion.div>
@@ -265,18 +384,19 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.5 }}
-                  className="card p-6 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/15 flex items-center justify-center mb-4 group-hover:bg-brand-500/15 transition-colors">
-                    <item.icon className="w-5 h-5 text-brand-400" />
-                  </div>
-                  <h3 className="text-base font-semibold text-neutral-100 mb-2">{item.title}</h3>
-                  <p className="text-sm text-neutral-400 leading-relaxed mb-4">{item.description}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.tags.map((tag) => (
-                      <TechBadge key={tag} name={tag} size="sm" variant="brand" />
-                    ))}
-                  </div>
+                  <TiltCard className="card p-6 group h-full">
+                    <div className="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/15 flex items-center justify-center mb-4 group-hover:bg-brand-500/15 transition-colors">
+                      <item.icon className="w-5 h-5 text-brand-400" />
+                    </div>
+                    <h3 className="text-base font-semibold text-neutral-100 mb-2">{item.title}</h3>
+                    <p className="text-sm text-neutral-400 leading-relaxed mb-4">{item.description}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.tags.map((tag) => (
+                        <TechBadge key={tag} name={tag} size="sm" variant="brand" />
+                      ))}
+                    </div>
+                  </TiltCard>
                 </motion.div>
               ))}
             </div>
@@ -317,6 +437,7 @@ export default function HomePage() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.15, duration: 0.5 }}
                 >
+                  <TiltCard className="h-full">
                   <Link
                     href={`/projects/${project.slug}`}
                     className="block card p-6 h-full group relative overflow-hidden"
@@ -350,6 +471,7 @@ export default function HomePage() {
                       </span>
                     </div>
                   </Link>
+                  </TiltCard>
                 </motion.div>
               ))}
             </div>
@@ -464,7 +586,7 @@ export default function HomePage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
-                href="https://linkedin.com/in/umapathi-r"
+                href="https://linkedin.com/in/umapathi-ramesh-279289226"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg bg-white/5 border border-white/8 hover:bg-white/8 text-neutral-200 font-medium transition-all"

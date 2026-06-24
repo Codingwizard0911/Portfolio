@@ -4,6 +4,10 @@ import { ArrowRight, MapPin, GraduationCap, Award, Users, BookOpen } from "lucid
 import AnimatedSection from "@/components/shared/AnimatedSection";
 import SectionHeader from "@/components/shared/SectionHeader";
 import TechBadge from "@/components/shared/TechBadge";
+import ProfileImage from "@/components/shared/ProfileImage";
+import FunFacts from "@/components/shared/FunFacts";
+import SkillRadar from "@/components/shared/SkillRadar";
+import GitHubStats from "@/components/shared/GitHubStats";
 
 export const metadata: Metadata = {
   title: "About",
@@ -97,24 +101,31 @@ export default function AboutPage() {
 
         {/* Hero */}
         <AnimatedSection className="mb-20">
-          <div className="inline-flex items-center gap-2 mb-4">
+          <div className="inline-flex items-center gap-2 mb-6">
             <div className="w-4 h-px bg-brand-500" />
             <span className="text-xs font-semibold text-brand-400 uppercase tracking-widest">About</span>
           </div>
-          <h1 className="text-5xl font-bold text-neutral-50 tracking-tight mb-6">
-            The engineer behind the work.
-          </h1>
-          <div className="flex items-center gap-2 text-neutral-500 mb-8">
-            <MapPin className="w-4 h-4" />
-            <span className="text-sm">Dharmapuri, Tamil Nadu, India</span>
-            <span className="text-neutral-700">·</span>
-            <span className="text-sm text-emerald-400">Open to remote</span>
+
+          <div className="flex flex-col sm:flex-row sm:items-start gap-8 mb-8">
+            <ProfileImage size="md" />
+            <div className="flex-1">
+              <h1 className="text-4xl sm:text-5xl font-bold text-neutral-50 tracking-tight mb-3">
+                The engineer behind the work.
+              </h1>
+              <div className="flex flex-wrap items-center gap-2 text-neutral-500">
+                <MapPin className="w-4 h-4 shrink-0" />
+                <span className="text-sm">Dharmapuri, Tamil Nadu, India</span>
+                <span className="text-neutral-700">·</span>
+                <span className="text-sm text-emerald-400">Open to remote</span>
+              </div>
+            </div>
           </div>
-          <div className="prose prose-invert prose-lg max-w-none">
-            <p className="text-xl text-neutral-300 leading-relaxed mb-6">
+
+          <div className="space-y-4">
+            <p className="text-xl text-neutral-300 leading-relaxed">
               I&apos;m Umapathi R — a Full Stack Developer and published ML researcher. I graduated with an 8.8 CGPA in Information Technology and currently work at Vaken Technologies building cloud-based business applications.
             </p>
-            <p className="text-base text-neutral-400 leading-relaxed mb-6">
+            <p className="text-base text-neutral-400 leading-relaxed">
               What makes me different isn&apos;t just the combination of skills — it&apos;s the fact that I published two international research papers <em>while</em> completing my degree and building production projects. That parallel track of academic rigor and engineering practice shapes how I approach every system I build.
             </p>
             <p className="text-base text-neutral-400 leading-relaxed">
@@ -123,19 +134,22 @@ export default function AboutPage() {
           </div>
         </AnimatedSection>
 
-        {/* Values */}
+        {/* Values + Fun Facts + Skill Radar */}
         <AnimatedSection delay={0.1} className="mb-20">
-          <SectionHeader
-            label="Engineering Philosophy"
-            title="How I think about building"
-          />
-          <div className="grid sm:grid-cols-2 gap-4">
+          <SectionHeader label="Engineering Philosophy" title="How I think about building" />
+          <div className="grid sm:grid-cols-2 gap-4 mb-6">
             {values.map((v) => (
               <div key={v.title} className="card p-6">
                 <h3 className="text-sm font-semibold text-neutral-100 mb-2">{v.title}</h3>
                 <p className="text-sm text-neutral-400 leading-relaxed">{v.description}</p>
               </div>
             ))}
+          </div>
+
+          {/* Fun fact + Skill radar side by side */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <FunFacts />
+            <SkillRadar />
           </div>
         </AnimatedSection>
 
@@ -244,6 +258,11 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
+        </AnimatedSection>
+
+        {/* GitHub live stats */}
+        <AnimatedSection delay={0.28} className="mb-10">
+          <GitHubStats />
         </AnimatedSection>
 
         {/* CTA */}

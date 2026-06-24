@@ -18,7 +18,7 @@ export const experience: Experience[] = [
       "Contribute to AWS-based deployments and cloud-native application development on EC2, S3, and RDS infrastructure.",
     ],
     technologies: [
-      "Python", "JavaScript", "Vue.js", "PostgreSQL", "MySQL",
+      "JavaScript", "Vue.js", "PostgreSQL", "MySQL",
       "REST APIs", "AWS", "Jenkins", "Git", "CI/CD",
     ],
     highlights: [

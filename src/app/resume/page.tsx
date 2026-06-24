@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { Download, ExternalLink, ArrowRight } from "lucide-react";
 import AnimatedSection from "@/components/shared/AnimatedSection";
@@ -51,7 +51,7 @@ export default function ResumePage() {
             <span>+91 9042180833</span>
             <span className="text-neutral-700">·</span>
             <a
-              href="https://linkedin.com/in/umapathi-r"
+              href="https://linkedin.com/in/umapathi-ramesh-279289226"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-neutral-200 transition-colors"
@@ -60,7 +60,7 @@ export default function ResumePage() {
             </a>
             <span className="text-neutral-700">·</span>
             <a
-              href="https://github.com/umapathiu0911"
+              href="https://github.com/Codingwizard0911"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-neutral-200 transition-colors"

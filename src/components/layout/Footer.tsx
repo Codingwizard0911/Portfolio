@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Mail, Terminal } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/shared/SocialIcons";
 
@@ -23,8 +23,8 @@ const footerLinks: Record<string, FooterLink[]> = {
   ],
   connect: [
     { label: "Contact", href: "/contact" },
-    { label: "GitHub", href: "https://github.com/umapathiu0911", external: true },
-    { label: "LinkedIn", href: "https://linkedin.com/in/umapathi-r", external: true },
+    { label: "GitHub", href: "https://github.com/Codingwizard0911", external: true },
+    { label: "LinkedIn", href: "https://linkedin.com/in/umapathi-ramesh-279289226", external: true },
     { label: "Email", href: "mailto:umapathiu0911@gmail.com", external: true },
   ],
 };
@@ -49,7 +49,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3 mt-6">
               <a
-                href="https://github.com/umapathiu0911"
+                href="https://github.com/Codingwizard0911"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub profile"
@@ -58,7 +58,7 @@ export default function Footer() {
                 <GithubIcon className="w-4 h-4" />
               </a>
               <a
-                href="https://linkedin.com/in/umapathi-r"
+                href="https://linkedin.com/in/umapathi-ramesh-279289226"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn profile"

@@ -1,7 +1,48 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Mail, MapPin, Send, CheckCircle2 } from "lucide-react";
+
+function fireConfetti() {
+  const canvas = document.createElement("canvas");
+  canvas.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999;width:100%;height:100%";
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext("2d")!;
+
+  const colors = ["#3b82f6","#a855f7","#22c55e","#f97316","#ec4899","#eab308","#06b6d4"];
+  const particles = Array.from({ length: 180 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * 300,
+    vx: (Math.random() - 0.5) * 5,
+    vy: 1.5 + Math.random() * 4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    w: 5 + Math.random() * 8,
+    h: 3 + Math.random() * 4,
+    rot: Math.random() * 360,
+    vr: (Math.random() - 0.5) * 10,
+    gravity: 0.06 + Math.random() * 0.06,
+  }));
+
+  let frame = 0;
+  const MAX = 140;
+  (function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p) => {
+      p.x += p.vx; p.y += p.vy; p.vy += p.gravity; p.rot += p.vr;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rot * Math.PI) / 180);
+      ctx.globalAlpha = Math.max(0, 1 - frame / MAX);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    if (++frame < MAX) requestAnimationFrame(draw);
+    else canvas.remove();
+  })();
+}
 import { GithubIcon, LinkedinIcon } from "@/components/shared/SocialIcons";
 import AnimatedSection from "@/components/shared/AnimatedSection";
 import SectionHeader from "@/components/shared/SectionHeader";
@@ -17,15 +58,15 @@ const contactLinks = [
   {
     icon: LinkedinIcon,
     label: "LinkedIn",
-    value: "linkedin.com/in/umapathi-r",
-    href: "https://linkedin.com/in/umapathi-r",
+    value: "linkedin.com/in/umapathi-ramesh-279289226",
+    href: "https://linkedin.com/in/umapathi-ramesh-279289226",
     description: "Connect professionally",
   },
   {
     icon: GithubIcon,
     label: "GitHub",
-    value: "github.com/umapathiu0911",
-    href: "https://github.com/umapathiu0911",
+    value: "github.com/Codingwizard0911",
+    href: "https://github.com/Codingwizard0911",
     description: "See the code behind the work",
   },
 ];
@@ -34,7 +75,7 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("sending");
     try {
@@ -46,13 +87,14 @@ export default function ContactPage() {
       if (res.ok) {
         setStatus("success");
         setForm({ name: "", email: "", subject: "", message: "" });
+        fireConfetti();
       } else {
         setStatus("error");
       }
     } catch {
       setStatus("error");
     }
-  }
+  }, [form]);
 
   return (
     <div className="pt-24 pb-24">
@@ -76,7 +118,7 @@ export default function ContactPage() {
                   href={link.href}
                   target={link.href.startsWith("http") ? "_blank" : undefined}
                   rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="card p-5 flex items-start gap-4 block group"
+                  className="card p-5 flex items-start gap-4 group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center shrink-0 group-hover:bg-brand-500/15 transition-colors">
                     <link.icon className="w-4.5 h-4.5 text-brand-400" />
