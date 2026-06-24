@@ -25,8 +25,15 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://umapathi.dev"),
   title: {
-    default: "Umapathi R — Full Stack Engineer & ML Researcher",
+    default: "Umapathi R · Full Stack & ML",
     template: "%s · Umapathi R",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   description:
     "Full Stack Developer and Published ML Researcher. I build data-driven products at the intersection of software engineering and machine intelligence. Currently at Vaken Technologies.",
