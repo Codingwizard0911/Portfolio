@@ -40,9 +40,9 @@ export async function POST(request: NextRequest) {
         ? `Portfolio contact: ${subject.trim()}`
         : `Portfolio contact from ${name}`;
 
-      await resend.emails.send({
-        from: "Portfolio <onboarding@resend.dev>",
-        to: "umapathiu0911@gmail.com",
+      const result = await resend.emails.send({
+        from: "onboarding@resend.dev",
+        to: "galaxyhunt007@gmail.com",
         replyTo: email,
         subject: subjectLine,
         html: `
@@ -69,8 +69,12 @@ export async function POST(request: NextRequest) {
           </div>
         `,
       });
+
+      if (result.error) {
+        console.error("[Resend error]", result.error);
+        // Still return success to user — don't block UX on email provider errors
+      }
     } else {
-      // Fallback: log to console (local dev without Resend key)
       console.log("[Contact form submission]", { name, email, subject, messageLength: message.length });
     }
 
